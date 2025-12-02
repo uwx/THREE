@@ -494,5 +494,13 @@ namespace THREE
             return true;
 
         }
+        public float SurfaceArea()
+        {
+            if (IsEmpty()) return 0f;
+            float dx = Max.X - Min.X;
+            float dy = Max.Y - Min.Y;
+            float dz = Max.Z - Min.Z;
+            return 2f * (dx * dy + dy * dz + dz * dx);
+        }
     }
 }

@@ -155,5 +155,45 @@ namespace THREE
             }
         }
 
+        public static MeshBVH ComputeBoundsTree(this BufferGeometry geometry, MeshBVH.Options options = null)
+        {
+            if (geometry == null) return null;
+            options ??= new MeshBVH.Options();
+            geometry.UserData["BoundsTree"] = new MeshBVH(geometry, options);
+            return (MeshBVH)geometry.UserData["BoundsTree"];
+        }
+
+        public static void DisposeBoundsTree(this BufferGeometry geometry)
+        {
+            if (geometry != null) geometry.UserData["BoundsTree"] = null;
+        }
+
+        public static List<Intersection> AcceleratedRaycast(this Mesh mesh, Raycaster raycaster, List<Intersection> target = null)
+        {
+            target ??= new List<Intersection>();
+            if (mesh.Geometry is BufferGeometry bg && bg.UserData["BoundsTree"] != null && mesh.Material != null)
+            {
+                var tmpInv = new Matrix4().Copy(mesh.MatrixWorld).Invert();
+                var localRay = new Ray(raycaster.ray.origin.Clone(), raycaster.ray.direction.Clone());
+                localRay.ApplyMatrix4(tmpInv);
+                var worldScale = new Vector3().SetFromMatrixScale(mesh.MatrixWorld);
+                var dir = localRay.direction.Clone().Multiply(worldScale);
+                var scaleFactor = dir.Length();
+                double near = raycaster.near / scaleFactor;
+                double far = raycaster.far / scaleFactor;
+
+                var hits = ((MeshBVH)bg.UserData["BoundsTree"]).Raycast(localRay, mesh.Material, near, far);
+                foreach (var h in hits)
+                {
+                    h.object3D = mesh;
+                    target.Add(h);
+                }
+            }
+            else
+            {
+                mesh.Raycast(raycaster, target);
+            }
+            return target;
+        }
     }
 }

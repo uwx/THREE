@@ -19,6 +19,8 @@ namespace THREE
         public Vector2 uv;
         public Vector2 uv2;
         public int instanceId;
+        public int rootIndex; // added for BVH
+        public Vector3 barycentric; // added for BVH
     }
     [Serializable]
     public class RaycasterParameters
