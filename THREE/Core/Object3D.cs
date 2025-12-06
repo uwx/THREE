@@ -179,17 +179,17 @@ namespace THREE
             if (source.Geometry != null)
             {
                 if (source.Geometry is BufferGeometry)
-                    this.Geometry = source.Geometry as BufferGeometry;
+                    this.Geometry = (source.Geometry as BufferGeometry).DeepCopy();
                 else
-                    this.Geometry = source.Geometry;
+                    this.Geometry = source.Geometry.DeepCopy();
             }
             if (source.Material != null)
             {
-                this.Material = source.Material;
+                this.Material = source.Material.DeepCopy();
             }
             if (source.Materials.Count > 0)
             {
-                this.Materials = source.Materials;
+                this.Materials = source.Materials.DeepCopy();
             }
 
             if (recursive == true)
@@ -198,7 +198,13 @@ namespace THREE
                 {
 
                     var child = source.Children[i];
-                    this.Add((Object3D)child.Clone());
+                    this.Add(child.DeepCopy());
+                }
+
+                Hashtable hashTable = base.Clone() as Hashtable;
+                foreach (DictionaryEntry item in hashTable)
+                {
+                    this.Add(item.Key, item.Value);
                 }
             }
 
@@ -600,14 +606,15 @@ namespace THREE
 
         public override object Clone()
         {
-            Hashtable hashTable = base.Clone() as Hashtable;
+           
             Object3D cloned = new Object3D(this);
 
-            foreach (DictionaryEntry item in hashTable)
-            {
-                cloned.Add(item.Key, item.Value);
-            }
+            
             return cloned;
+        }
+        public virtual object Copy(object source, bool recursive = true)
+        {
+            return new Object3D((Object3D)source, recursive);
         }
         public override void Dispose()
         {
