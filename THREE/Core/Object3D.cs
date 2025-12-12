@@ -201,7 +201,7 @@ namespace THREE
                     this.Add(child.DeepCopy());
                 }
 
-                Hashtable hashTable = base.Clone() as Hashtable;
+                Hashtable hashTable = source;
                 foreach (DictionaryEntry item in hashTable)
                 {
                     this.Add(item.Key, item.Value);
